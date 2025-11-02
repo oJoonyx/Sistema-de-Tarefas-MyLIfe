@@ -62,14 +62,8 @@ O projeto está configurado para **Deploy Contínuo** via Render, utilizando `gu
 **João Pedro Parizotto**
 
 - **Contato:** joaopedrocallado@hotmail.com
-- **LinkedIn:** (Insira seu link do LinkedIn para contato profissional!)
+- **LinkedIn:** ([Insira seu link do LinkedIn para contato profissional!](https://www.linkedin.com/in/joão-pedro-parizotto-870938237))
 
----
-
-### 📌 Próxima Ação:
-
-**1. Salve este código** no seu arquivo `README.md`.
-**2. Envie a atualização final para o GitHub:**
 
 ```bash
 git add README.md
