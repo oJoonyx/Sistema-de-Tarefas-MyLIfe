@@ -64,8 +64,3 @@ O projeto está configurado para **Deploy Contínuo** via Render, utilizando `gu
 - **Contato:** joaopedrocallado@hotmail.com
 - **LinkedIn:** ([Insira seu link do LinkedIn para contato profissional!](https://www.linkedin.com/in/joão-pedro-parizotto-870938237))
 
-
-```bash
-git add README.md
-git commit -m "docs: Remove localhost e finaliza README para deploy no Render"
-git push origin main
