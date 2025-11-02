@@ -146,4 +146,3 @@ export MAIL_PASSWORD=sua-senha
 ## 📝 Licença
 
 Este projeto foi desenvolvido por João Pedro Parizotto.
-
