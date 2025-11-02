@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Tarefas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-align: center;
+        }
+        .form-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            display: flex;
+            gap: 10px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus {
+            border-color: #667eea;
+        }
+        button {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .tarefas-lista {
+            margin-top: 30px;
+        }
+        .tarefa {
+            background: #fff;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .tarefa.feito {
+            opacity: 0.6;
+            border-left-color: #28a745;
+        }
+        .tarefa.feito .tarefa-texto {
+            text-decoration: line-through;
+            color: #6c757d;
+        }
+        .tarefa-texto {
+            flex: 1;
+            color: #333;
+            font-size: 16px;
+        }
+        .tarefa-acoes {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .btn-completar {
+            padding: 8px 20px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .btn-completar:hover {
+            background: #218838;
+        }
+        .tarefa.feito .btn-completar {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .vazia {
+            text-align: center;
+            color: #6c757d;
+            padding: 40px;
+            font-size: 18px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status-pendente {
+            background: #ffc107;
+            color: #333;
+        }
+        .status-concluido {
+            background: #28a745;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Gestão de Tarefas</h1>
+        
+        <!-- Formulário para adicionar tarefa -->
+        <div class="form-container">
+            <form action="/adicionar" method="POST" class="form-group">
+                <input 
+                    type="text" 
+                    name="texto_tarefa" 
+                    placeholder="Digite uma nova tarefa..." 
+                    required
+                    autofocus
+                >
+                <button type="submit">Adicionar Tarefa</button>
+            </form>
+        </div>
+
+        <!-- Lista de tarefas -->
+        <div class="tarefas-lista">
+            {% if tarefas %}
+                {% for tarefa in tarefas %}
+                <div class="tarefa {% if tarefa.feito %}feito{% endif %}">
+                    <span class="tarefa-texto">
+                        {{ tarefa.texto }}
+                        <span class="status-badge {% if tarefa.feito %}status-concluido{% else %}status-pendente{% endif %}">
+                            {% if tarefa.feito %}Concluído{% else %}Pendente{% endif %}
+                        </span>
+                    </span>
+                    <div class="tarefa-acoes">
+                        {% if not tarefa.feito %}
+                            <a href="/completar/{{ tarefa.id }}" class="btn-completar">Marcar como Concluída</a>
+                        {% else %}
+                            <span class="btn-completar">Concluída</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="vazia">
+                    📝 Nenhuma tarefa cadastrada. Adicione uma nova tarefa acima!
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
+

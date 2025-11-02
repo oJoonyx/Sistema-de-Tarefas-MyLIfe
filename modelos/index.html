@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ nome_lista }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #6c63ff;
+            --color-background: #f4f7f6;
+            --color-card-bg: #ffffff;
+            --color-text-dark: #333;
+            --color-text-light: #999;
+            --color-success: #4CAF50;
+            --color-warning: #FFC107;
+            --color-danger: #f44336;
+            --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--color-background);
+            color: var(--color-text-dark);
+            min-height: 100vh;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sidebar-card {
+            background-color: var(--color-card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow-light);
+            padding: 20px;
+        }
+
+        .sidebar-card h2 {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: var(--color-text-dark);
+        }
+
+        /* Calendário Semanal */
+        .calendar-week {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .calendar-day {
+            padding: 12px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .calendar-day:hover {
+            background-color: #f0f0f0;
+        }
+
+        .calendar-day.today {
+            background-color: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+
+        .calendar-day.today .day-name,
+        .calendar-day.today .day-number {
+            color: white;
+        }
+
+        .day-name {
+            font-size: 0.75em;
+            font-weight: 600;
+            color: var(--color-text-light);
+            text-transform: uppercase;
+        }
+
+        .day-number {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--color-text-dark);
+            margin-top: 5px;
+        }
+
+        .day-date {
+            font-size: 0.85em;
+            color: var(--color-text-light);
+            margin-top: 3px;
+        }
+
+        /* Dashboard */
+        .dashboard-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--color-primary), #8b82ff);
+            border-radius: 10px;
+            color: white;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 25px;
+            background-color: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-success), #66bb6a);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.85em;
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Header com nome da lista */
+        .dashboard-header {
+            background-color: var(--color-card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow-light);
+            padding: 30px;
+        }
+
+        .list-name-section {
+            margin-bottom: 25px;
+        }
+
+        .list-name-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .list-name-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .list-name-input:focus {
+            border-color: var(--color-primary);
+        }
+
+        .list-name-btn {
+            padding: 12px 20px;
+            background-color: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .list-name-btn:hover {
+            background-color: #5a52e5;
+        }
+
+        /* Formulário de tarefas */
+        .task-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-size: 0.9em;
+            font-weight: 600;
+            color: var(--color-text-dark);
+        }
+
+        .form-group.full-width {
+            flex: 1 1 100%;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        textarea {
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        textarea:focus {
+            border-color: var(--color-primary);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+
+        button[type="submit"] {
+            padding: 14px 30px;
+            background-color: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #5a52e5;
+        }
+
+        /* Lista de tarefas */
+        .task-list {
+            background-color: var(--color-card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow-light);
+            padding: 25px;
+        }
+
+        .task-list h2 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: var(--color-text-dark);
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        .task-item {
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            background-color: #fafafa;
+            border-left: 4px solid var(--color-primary);
+            transition: all 0.3s;
+        }
+
+        .task-item:hover {
+            background-color: #f5f5f5;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-item.completed {
+            opacity: 0.7;
+            border-left-color: var(--color-success);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .task-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: var(--color-text-dark);
+            flex: 1;
+        }
+
+        .task-item.completed .task-title {
+            text-decoration: line-through;
+            color: var(--color-text-light);
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .task-action-btn {
+            padding: 8px 16px;
+            background-color: var(--color-success);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .task-action-btn:hover {
+            background-color: #45a049;
+        }
+
+        .task-item.completed .task-action-btn {
+            background-color: #6c757d;
+            cursor: default;
+        }
+
+        .task-details {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #eee;
+        }
+
+        .task-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            color: var(--color-text-light);
+        }
+
+        .task-detail-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .task-detail-label {
+            font-weight: 600;
+            min-width: 80px;
+        }
+
+        .task-link {
+            color: var(--color-primary);
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .task-link:hover {
+            text-decoration: underline;
+        }
+
+        .task-description {
+            color: var(--color-text-dark);
+            line-height: 1.5;
+            margin-top: 5px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--color-text-light);
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        /* Responsividade */
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 280px 1fr;
+                padding: 20px;
+                gap: 20px;
+            }
+        }
+
+        /* Mensagens Flash */
+        .flash-messages {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* Rodapé */
+        footer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            margin-top: 50px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-light);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .footer-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .footer-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .footer-info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1em;
+        }
+
+        .footer-info-item a {
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        .footer-info-item a:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        .footer-description {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-top: 15px;
+        }
+
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: var(--color-danger);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            z-index: 999;
+        }
+
+        .logout-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 15px;
+                gap: 20px;
+            }
+
+            .form-row {
+                flex-direction: column;
+            }
+
+            .calendar-week {
+                flex-direction: row;
+                overflow-x: auto;
+            }
+
+            .calendar-day {
+                min-width: 70px;
+            }
+
+            .flash-messages {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+
+            .logout-btn {
+                position: relative;
+                top: 0;
+                right: 0;
+                display: inline-block;
+                margin-bottom: 20px;
+            }
+
+            footer {
+                padding: 30px 20px;
+            }
+
+            .footer-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mensagens Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Botão de Logout -->
+    <a href="/logout" class="logout-btn">🚪 Sair</a>
+
+    <div class="container">
+        <aside class="sidebar">
+            <!-- Calendário Semanal -->
+            <div class="sidebar-card">
+                <h2>📅 Calendário da Semana</h2>
+                <div class="calendar-week">
+                    {% for dia_info in semana %}
+                    <div class="calendar-day {% if dia_info.e_hoje %}today{% endif %}">
+                        <div class="day-name">{{ dia_info.dia_semana[:3] }}</div>
+                        <div class="day-number">{{ dia_info.dia_numero }}</div>
+                        <div class="day-date">{{ dia_info.dia }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Dashboard de Estatísticas -->
+            <div class="sidebar-card">
+                <h2>📊 Dashboard</h2>
+                <div class="dashboard-stats">
+                    <div class="stat-item">
+                        <div>
+                            <div class="stat-label">Tarefas Completas</div>
+                            <div class="stat-value">{{ tarefas_completas }}/{{ total_tarefas }}</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span style="font-weight: 600; color: var(--color-text-dark);">Progresso</span>
+                            <span style="font-weight: 700; color: var(--color-primary);">{{ porcentagem }}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ porcentagem }}%;">
+                                {{ porcentagem }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+            <!-- Header com nome da lista editável -->
+            <header class="dashboard-header">
+                <div class="list-name-section">
+                    <form action="/atualizar_nome" method="post" class="list-name-form">
+                        <input 
+                            type="text" 
+                            name="nome_lista" 
+                            value="{{ nome_lista }}" 
+                            class="list-name-input"
+                            placeholder="Nome da sua lista"
+                            required
+                        >
+                        <button type="submit" class="list-name-btn">Salvar Nome</button>
+                    </form>
+                </div>
+                
+                <!-- Formulário para adicionar tarefa -->
+                <form action="/adicionar" method="post" class="task-form">
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="texto_tarefa">📝 Título da Tarefa *</label>
+                            <input 
+                                type="text" 
+                                id="texto_tarefa"
+                                name="texto_tarefa" 
+                                placeholder="Ex: Prova de Banco de Dados, Ler 2 páginas, Finalizar livro" 
+                                required
+                            >
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="data">📅 Data / Prazo</label>
+                            <input 
+                                type="date" 
+                                id="data"
+                                name="data"
+                                placeholder="Data"
+                            >
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="link">🔗 Link (opcional)</label>
+                            <input 
+                                type="text" 
+                                id="link"
+                                name="link" 
+                                placeholder="Cole o link aqui (URL, vídeo, material, etc.)"
+                            >
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="descricao">📄 Descrição / Detalhes</label>
+                            <textarea 
+                                id="descricao"
+                                name="descricao" 
+                                placeholder="Ex: Estudar capítulo 5, Ler páginas 10-15, Professor João, Material disponível em..."
+                            ></textarea>
+                        </div>
+                    </div>
+                    
+                    <button type="submit">➕ Adicionar Tarefa</button>
+                </form>
+            </header>
+            
+            <!-- Lista de Tarefas -->
+            <section class="task-list">
+                <h2>📋 Lista de Tarefas</h2>
+                {% if tarefas %}
+                    <ul>
+                        {% for tarefa in tarefas %}
+                        <li class="task-item {% if tarefa.feito %}completed{% endif %}">
+                            <div class="task-header">
+                                <div class="task-title">
+                                    {% if tarefa.feito %}
+                                        <s>{{ tarefa.texto }}</s>
+                                    {% else %}
+                                        {{ tarefa.texto }}
+                                    {% endif %}
+                                </div>
+                                <div class="task-actions">
+                                    {% if not tarefa.feito %}
+                                        <a href="/completar/{{ tarefa.id }}" class="task-action-btn">✓ Concluir</a>
+                                    {% else %}
+                                        <span class="task-action-btn">✓ Concluída</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if tarefa.descricao or tarefa.data or tarefa.link %}
+                            <div class="task-details">
+                                {% if tarefa.descricao %}
+                                <div class="task-detail-item">
+                                    <span class="task-detail-label">📄 Descrição:</span>
+                                    <span class="task-description">{{ tarefa.descricao }}</span>
+                                </div>
+                                {% endif %}
+                                
+                                {% if tarefa.data %}
+                                <div class="task-detail-item">
+                                    <span class="task-detail-label">📅 Data:</span>
+                                    <span>{{ tarefa.data }}</span>
+                                </div>
+                                {% endif %}
+                                
+                                {% if tarefa.link %}
+                                <div class="task-detail-item">
+                                    <span class="task-detail-label">🔗 Link:</span>
+                                    <a href="{{ tarefa.link }}" target="_blank" rel="noopener noreferrer" class="task-link">
+                                        {{ tarefa.link }}
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <h3>Nenhuma tarefa cadastrada</h3>
+                        <p>Adicione uma nova tarefa usando o formulário acima!</p>
+                    </div>
+                {% endif %}
+            </section>
+        </main>
+    </div>
+
+    <!-- Rodapé com informações de contato -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-title">📋 myLife</div>
+            <div class="footer-info">
+                <div class="footer-info-item">
+                    <span>👨‍💻 Desenvolvido por:</span>
+                    <strong>João Pedro Parizotto</strong>
+                </div>
+                <div class="footer-info-item">
+                    <span>📧 Email de contato:</span>
+                    <a href="mailto:joaopedrocallado@hotmail.com">joaopedrocallado@hotmail.com</a>
+                </div>
+            </div>
+            <div class="footer-description">
+                <p>Este site foi criado por João Pedro Parizotto. Para projetos, propostas ou contato, envie um email para joaopedrocallado@hotmail.com</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
