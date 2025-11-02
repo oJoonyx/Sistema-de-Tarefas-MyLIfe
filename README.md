@@ -1,6 +1,6 @@
 # 🚀 Sistema de Gestão de Tarefas - MyLife
 
-### [ ACESSE O SITE AQUI: https://sistema-de-tarefas-mylife.onrender.com ]
+### [ ACESSE O SITE AQUI: [https://sistema-de-tarefas-mylife.onrender.com](https://sistema-de-tarefas-mylife.onrender.com/login) ]
 
 Sistema Web de produtividade pessoal completo, construído em Python/Flask, com foco em segurança, persistência de dados e gerenciamento detalhado de tarefas para um único usuário.
 
