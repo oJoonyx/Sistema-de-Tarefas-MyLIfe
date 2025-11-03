@@ -7,5 +7,9 @@ env/
 venv/
 *.env
 
-# Banco de dados local
-*.db
+# Banco de dados local - NÃO IGNORAR EM PRODUÇÃO
+# Descomente a linha abaixo apenas se quiser que o banco NÃO seja versionado
+# *.db
+
+# Mas mantenha o banco de dados fora do gitignore para persistência
+# O banco tarefas.db deve ser mantido para desenvolvimento local

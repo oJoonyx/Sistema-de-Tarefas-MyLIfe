@@ -16,12 +16,21 @@ app.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'True').lower() == 'true'
 app.config['TESTING'] = False
 
 # Configuração do banco de dados (usa variável de ambiente ou padrão local)
-database_url = os.getenv('DATABASE_URL', 'sqlite:///tarefas.db')
-# Ajustar para PostgreSQL no Render (formato: postgresql://...)
-if database_url.startswith('postgres://'):
-    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+database_url = os.getenv('DATABASE_URL', None)
+if not database_url:
+    # Usar caminho absoluto para garantir persistência
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    database_path = os.path.join(basedir, 'tarefas.db')
+    database_url = f'sqlite:///{database_path}'
+else:
+    # Ajustar para PostgreSQL no Render (formato: postgresql://...)
+    if database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# Garantir que o banco não seja recriado se já existir
+app.config['SQLALCHEMY_ECHO'] = False
 
 # Configuração do email (usando variáveis de ambiente para segurança)
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
@@ -33,6 +42,8 @@ app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True').lower() == 'true'
 app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME', '')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD', '')
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME', '')
+# CERTIFIQUE-SE DE QUE MAIL_SUPPRESS_SEND ESTÁ DEFINIDO COMO False EM PRODUÇÃO!
+app.config['MAIL_SUPPRESS_SEND'] = os.getenv('MAIL_SUPPRESS_SEND', 'False').lower() == 'true'
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -150,17 +161,27 @@ def login():
         email = request.form.get('email', '').strip()
         senha = request.form.get('senha', '').strip()
         
-        usuario = Usuario.query.filter_by(email=email).first()
+        # Buscar email de forma case-insensitive
+        usuario = Usuario.query.filter(db.func.lower(Usuario.email) == email.lower()).first()
         
-        if usuario and usuario.check_senha(senha):
-            login_user(usuario)
-            flash('Login realizado com sucesso!', 'success')
-            next_page = request.args.get('next')
-            if next_page:
-                return redirect(next_page)
-            return redirect(url_for('index'))
+        if usuario:
+            if usuario.check_senha(senha):
+                login_user(usuario)
+                print(f"✅ Login realizado: {email}")
+                flash('Login realizado com sucesso!', 'success')
+                next_page = request.args.get('next')
+                if next_page:
+                    return redirect(next_page)
+                return redirect(url_for('index'))
+            else:
+                print(f"❌ Senha incorreta para: {email}")
+                flash('Senha incorreta.', 'error')
         else:
-            flash('Email ou senha incorretos.', 'error')
+            print(f"❌ Email não encontrado: {email}")
+            # Debug: mostrar quantos usuários existem
+            total_usuarios = Usuario.query.count()
+            print(f"📊 Total de usuários no banco: {total_usuarios}")
+            flash('Email não encontrado. Verifique se digitou corretamente ou cadastre-se.', 'error')
     
     return render_template('login.html')
 
@@ -189,9 +210,9 @@ def cadastro():
             flash('A senha deve ter pelo menos 6 caracteres.', 'error')
             return render_template('cadastro.html')
         
-        # Verificar se email já existe
-        if Usuario.query.filter_by(email=email).first():
-            flash('Este email já está cadastrado.', 'error')
+        # Verificar se email já existe (case-insensitive)
+        if Usuario.query.filter(db.func.lower(Usuario.email) == email.lower()).first():
+            flash('Este email já está cadastrado. Faça login ou use a recuperação de senha.', 'error')
             return render_template('cadastro.html')
         
         # Criar novo usuário
@@ -214,7 +235,7 @@ def cadastro():
 @login_required
 def logout():
     logout_user()
-    flash('Logout realizado com sucesso!', 'success')
+    flash('Você foi desconectado com sucesso.', 'success')
     return redirect(url_for('login'))
 
 # Rota de recuperação de senha (formulário)
@@ -226,7 +247,8 @@ def recuperar_senha():
     if request.method == 'POST':
         email = request.form.get('email', '').strip()
         
-        usuario = Usuario.query.filter_by(email=email).first()
+        # Buscar email de forma case-insensitive
+        usuario = Usuario.query.filter(db.func.lower(Usuario.email) == email.lower()).first()
         
         if usuario:
             token = usuario.gerar_token_recuperacao()
@@ -260,19 +282,19 @@ myLife
                     # Em desenvolvimento, mostra o erro. Em produção, apenas mensagem genérica
                     error_msg = str(e) if app.config.get('DEBUG') else ''
                     print(f"Erro ao enviar email: {error_msg}")
-                    flash('Erro ao enviar email. O link de recuperação foi gerado. Entre em contato com o suporte.', 'error')
-                    # Em caso de erro, ainda permite mostrar o link manualmente (apenas em DEBUG)
-                    if app.config.get('DEBUG'):
-                        flash(f'Link de recuperação (DEBUG): {recovery_url}', 'info')
+                    flash('Erro ao enviar email. Tente novamente mais tarde ou entre em contato com o suporte.', 'error')
             else:
-                # Email não configurado - fornecer link manualmente (apenas em desenvolvimento)
-                recovery_url = url_for('redefinir_senha', token=token, _external=True)
+                # Email não configurado
                 if app.config.get('DEBUG'):
-                    flash(f'⚠️ Email não configurado. Use este link para recuperar: {recovery_url}', 'warning')
+                    # Apenas em desenvolvimento: mostrar link para debug
+                    recovery_url = url_for('redefinir_senha', token=token, _external=True)
+                    flash(f'⚠️ Email não configurado. Use este link para recuperar (APENAS DESENVOLVIMENTO): {recovery_url}', 'warning')
                 else:
+                    # Em produção: nunca mostrar o link
                     flash('⚠️ Email não configurado. Entre em contato com o suporte.', 'warning')
         else:
-            flash('Email não encontrado em nossa base de dados.', 'error')
+            # Mensagem mais útil e com sugestão de ação
+            flash('Email não encontrado em nossa base de dados. Verifique se digitou corretamente ou cadastre-se primeiro.', 'error')
     
     return render_template('recuperar_senha.html')
 
@@ -403,9 +425,22 @@ def completo(id):
     
     return redirect(url_for('index'))
 
-# Criar tabelas do banco de dados
+# Criar tabelas do banco de dados (não recria se já existirem)
 with app.app_context():
-    db.create_all()
+    try:
+        # create_all só cria tabelas que não existem (não apaga dados existentes)
+        db.create_all()
+        print("✅ Banco de dados verificado. Tabelas criadas se necessário.")
+        
+        # Verificar se o banco está funcionando
+        try:
+            usuario_count = Usuario.query.count()
+            print(f"📊 Usuários cadastrados no banco: {usuario_count}")
+        except:
+            print("📊 Banco de dados vazio (primeira execução)")
+    except Exception as e:
+        print(f"⚠️  Erro ao inicializar banco de dados: {e}")
+        print(f"   Caminho do banco: {app.config['SQLALCHEMY_DATABASE_URI']}")
 
 if __name__ == '__main__':
     app.run(

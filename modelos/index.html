@@ -585,7 +585,7 @@
                 top: 0;
                 right: 0;
                 display: inline-block;
-                margin-bottom: 20px;
+                margin-bottom: 10px;
             }
 
             footer {
@@ -613,8 +613,11 @@
         {% endif %}
     {% endwith %}
 
-    <!-- Botão de Logout -->
-    <a href="/logout" class="logout-btn">🚪 Sair</a>
+    <!-- Botões de Navegação -->
+    <div style="position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 999;">
+        <a href="{{ url_for('perfil') }}" class="logout-btn" style="background-color: var(--color-primary);">👤 Perfil</a>
+        <a href="/logout" class="logout-btn">🚪 Sair</a>
+    </div>
 
     <div class="container">
         <aside class="sidebar">
