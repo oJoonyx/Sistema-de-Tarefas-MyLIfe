@@ -340,6 +340,11 @@
             color: var(--color-text-light);
         }
 
+        /*
+         * ===============================================
+         * INÍCIO DO BLOCO DE CSS CORRIGIDO
+         * ===============================================
+        */
         .task-actions {
             display: flex;
             gap: 10px;
@@ -365,6 +370,28 @@
             background-color: #6c757d;
             cursor: default;
         }
+
+        /* Estilo para o botão Reverter */
+        .task-action-btn.revert {
+            background-color: var(--color-warning);
+            color: var(--color-text-dark); /* Texto escuro para melhor contraste no amarelo */
+        }
+        .task-action-btn.revert:hover {
+            background-color: #ffb300;
+        }
+
+        /* Estilo para o botão Deletar */
+        .task-action-btn.delete {
+            background-color: var(--color-danger);
+        }
+        .task-action-btn.delete:hover {
+            background-color: #d32f2f;
+        }
+        /*
+         * ===============================================
+         * FIM DO BLOCO DE CSS CORRIGIDO
+         * ===============================================
+        */
 
         .task-details {
             margin-top: 12px;
@@ -600,7 +627,6 @@
     </style>
 </head>
 <body>
-    <!-- Mensagens Flash -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             <div class="flash-messages">
@@ -613,7 +639,6 @@
         {% endif %}
     {% endwith %}
 
-    <!-- Botões de Navegação -->
     <div style="position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 999;">
         <a href="{{ url_for('perfil') }}" class="logout-btn" style="background-color: var(--color-primary);">👤 Perfil</a>
         <a href="/logout" class="logout-btn">🚪 Sair</a>
@@ -621,7 +646,6 @@
 
     <div class="container">
         <aside class="sidebar">
-            <!-- Calendário Semanal -->
             <div class="sidebar-card">
                 <h2>📅 Calendário da Semana</h2>
                 <div class="calendar-week">
@@ -635,7 +659,6 @@
                 </div>
             </div>
 
-            <!-- Dashboard de Estatísticas -->
             <div class="sidebar-card">
                 <h2>📊 Dashboard</h2>
                 <div class="dashboard-stats">
@@ -661,7 +684,6 @@
         </aside>
         
         <main class="main-content">
-            <!-- Header com nome da lista editável -->
             <header class="dashboard-header">
                 <div class="list-name-section">
                     <form action="/atualizar_nome" method="post" class="list-name-form">
@@ -677,7 +699,6 @@
                     </form>
                 </div>
                 
-                <!-- Formulário para adicionar tarefa -->
                 <form action="/adicionar" method="post" class="task-form">
                     <div class="form-row">
                         <div class="form-group full-width">
@@ -728,7 +749,6 @@
                 </form>
             </header>
             
-            <!-- Lista de Tarefas -->
             <section class="task-list">
                 <h2>📋 Lista de Tarefas</h2>
                 {% if tarefas %}
@@ -743,14 +763,21 @@
                                         {{ tarefa.texto }}
                                     {% endif %}
                                 </div>
+                                
                                 <div class="task-actions">
                                     {% if not tarefa.feito %}
-                                        <a href="/completar/{{ tarefa.id }}" class="task-action-btn">✓ Concluir</a>
+                                        <a href="{{ url_for('completo', id=tarefa.id) }}" class="task-action-btn">✓ Concluir</a>
                                     {% else %}
-                                        <span class="task-action-btn">✓ Concluída</span>
+                                        <a href="{{ url_for('reverter', id=tarefa.id) }}" class="task-action-btn revert">↺ Reverter</a>
                                     {% endif %}
+                                    
+                                    <a href="{{ url_for('deletar', id=tarefa.id) }}" 
+                                       class="task-action-btn delete" 
+                                       onclick="return confirm('Tem certeza que deseja deletar esta tarefa? Esta ação não pode ser desfeita.');">
+                                       🗑️ Deletar
+                                    </a>
                                 </div>
-                            </div>
+                                </div>
                             
                             {% if tarefa.descricao or tarefa.data or tarefa.link %}
                             <div class="task-details">
@@ -792,7 +819,6 @@
         </main>
     </div>
 
-    <!-- Rodapé com informações de contato -->
     <footer>
         <div class="footer-content">
             <div class="footer-title">📋 myLife</div>

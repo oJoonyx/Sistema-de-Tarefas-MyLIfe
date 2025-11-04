@@ -144,12 +144,7 @@ def obter_semana():
         })
     return semana, hoje
 
-# Rota inicial - redireciona para login ou index
-@app.route('/')
-def home():
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
-    return redirect(url_for('login'))
+
 
 # Rota de login
 @app.route('/login', methods=['GET', 'POST'])
@@ -337,6 +332,7 @@ def redefinir_senha(token):
     return render_template('redefinir_senha.html', token=token)
 
 # Rota principal - exibe lista de tarefas (protegida)
+@app.route('/')
 @app.route('/dashboard')
 @login_required
 def index():
@@ -424,7 +420,68 @@ def completo(id):
         print(f"Erro ao completar tarefa: {e}")
     
     return redirect(url_for('index'))
+# ===============================================
+# INÍCIO DO BLOCO DE NOVAS ROTAS
+# ===============================================
 
+# Rota de Perfil (acessada pelo template 'perfil.html')
+@app.route('/perfil', methods=['GET', 'POST'])
+@login_required
+def perfil():
+    if request.method == 'POST':
+        novo_nome = request.form.get('nome', '').strip()
+        if novo_nome:
+            try:
+                current_user.nome = novo_nome
+                db.session.commit()
+                flash('Nome atualizado com sucesso!', 'success')
+            except Exception as e:
+                db.session.rollback()
+                flash('Erro ao atualizar nome.', 'error')
+        else:
+            flash('O nome não pode ser vazio.', 'error')
+        return redirect(url_for('perfil'))
+        
+    return render_template('perfil.html', user=current_user)
+
+
+# Ação para deletar tarefa
+@app.route('/deletar/<int:id>')
+@login_required
+def deletar(id):
+    try:
+        # Garante que a tarefa pertença ao usuário logado
+        tarefa = Tarefa.query.filter_by(id=id, usuario_id=current_user.id).first_or_404()
+        db.session.delete(tarefa)
+        db.session.commit()
+        flash('Tarefa deletada com sucesso!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('Erro ao deletar tarefa. Tente novamente.', 'error')
+        print(f"Erro ao deletar tarefa: {e}")
+    
+    return redirect(url_for('index'))
+
+
+# Ação para reverter status (desfazer conclusão)
+@app.route('/reverter/<int:id>')
+@login_required
+def reverter(id):
+    try:
+        tarefa = Tarefa.query.filter_by(id=id, usuario_id=current_user.id).first_or_404()
+        tarefa.feito = False
+        db.session.commit()
+        flash('Tarefa desmarcada como concluída.', 'info')
+    except Exception as e:
+        db.session.rollback()
+        flash('Erro ao reverter status da tarefa.', 'error')
+        print(f"Erro ao reverter tarefa: {e}")
+    
+    return redirect(url_for('index'))
+
+# ===============================================
+# FIM DO BLOCO DE NOVAS ROTAS
+# ===============================================
 # Criar tabelas do banco de dados (não recria se já existirem)
 with app.app_context():
     try:
